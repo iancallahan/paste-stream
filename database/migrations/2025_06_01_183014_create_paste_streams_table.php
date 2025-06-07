@@ -16,9 +16,10 @@ return new class extends Migration
             $table->timestamps();
             $table->string('title');
             $table->string('description');
-            $table->json('pastes');
+            $table->json('pastes')->nullable();
             $table->boolean('public')->default(false);
-            $table->string('uuid');
+            $table->string('uuid')->unique();
+            $table->string('slug')->unique();
             $table->boolean('default')->default(false);
         });
     }

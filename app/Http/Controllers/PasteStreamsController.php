@@ -12,8 +12,6 @@ class PasteStreamsController extends Controller
     public function index()
     {
         $pasteStream = PasteStream::where('default', true)->first();
-
-        // Ensure pastes is an array and sort by created_at
         $items = collect($pasteStream->pastes ?? [])
             ->sortByDesc('created_at')
             ->values()
@@ -23,6 +21,7 @@ class PasteStreamsController extends Controller
             'pasteStream' => [
                 'items' => $items,
                 'uuid' => $pasteStream->uuid,
+                'id' => $pasteStream->id,
                 'title' => $pasteStream->title,
                 'description' => $pasteStream->description
             ]
@@ -38,8 +37,15 @@ class PasteStreamsController extends Controller
     public function update(Request $request, $uuid)
     {
         $pasteStream = PasteStream::where('uuid', $uuid)->first();
+
+        $content = $request->content;
+
+        if($request->has('encoding') && $request->encoding === 'base64' ) {
+            $content = base64_decode($content);
+        }
+
         $update = [
-            'content' => $request->content,
+            'content' => $content,
             'created_at' => [
                 'date' => now()->toDateTimeString(),
                 'timezone_type' => 3,
@@ -47,26 +53,12 @@ class PasteStreamsController extends Controller
             ]
         ];
 
-        // Add more detailed debugging
-        \Log::info('Starting PasteUpdated process', [
-            'update' => $update,
-            'uuid' => $uuid,
-            'broadcast_driver' => config('broadcasting.default'),
-            'connections' => config('broadcasting.connections'),
-            'channel' => 'paste-stream.' . $uuid
-        ]);
-
-        // Use push() to append to JSON array
         $pasteStream->update([
             'pastes' => collect($pasteStream->pastes ?? [])->push($update)->all()
         ]);
 
         try {
-            // Dispatch synchronously instead of asynchronously
             event(new PasteUpdated($update, $uuid));
-            // Or alternatively:
-            // broadcast(new PasteUpdated($update, $uuid))->toOthers();
-
             \Log::info('PasteUpdated event dispatched successfully');
         } catch (\Exception $e) {
             \Log::error('Failed to dispatch PasteUpdated event', [
@@ -78,11 +70,16 @@ class PasteStreamsController extends Controller
         return response()->json($pasteStream);
     }
 
-    public function download(Request $request, $uuid)
+    public function download(Request $request, PasteStream $pasteStream)
     {
-        $pasteStream = PasteStream::where('uuid', $uuid)->first();
         return response()->json($pasteStream);
     }
 
-
+    public function show($slug)
+    {
+        $pasteStream = PasteStream::where('slug', $slug)->first();
+        return Inertia::render('stream', [
+            'pasteStream' => $pasteStream
+        ]);
+    }
 }

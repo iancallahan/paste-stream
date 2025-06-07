@@ -10,6 +10,7 @@ class PasteStream extends Model
 
     protected $fillable = [
         'title',
+        'slug',
         'description',
         'pastes',
         'public',

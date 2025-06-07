@@ -6,6 +6,7 @@ import { tomorrow } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { useState, useEffect } from 'react';
 import Echo from 'laravel-echo';
 import Pusher from 'pusher-js';
+import './stream.css';
 
 declare global {
     interface Window {
@@ -33,6 +34,7 @@ interface Props {
     pasteStream: {
         items: PasteItem[];
         uuid: string;
+        id: number;
         title: string;
         description: string;
     };
@@ -42,7 +44,7 @@ interface Props {
 export default function Stream() {
     const { auth } = usePage<SharedData>().props;
     const { pasteStream } = usePage<Props>().props;
-    const [items, setItems] = useState<PasteItem[]>(pasteStream.items);
+    const [items, setItems] = useState<PasteItem[]>(Array.isArray(pasteStream?.items) ? pasteStream.items : []);
     const [copiedStates, setCopiedStates] = useState<Record<number, boolean>>({});
 
     useEffect(() => {
@@ -102,22 +104,6 @@ export default function Stream() {
     console.log('Auth:', auth);
     console.log('PasteStream:', pasteStream);
 
-    // Add safety check for undefined data
-    if (!pasteStream?.items) {
-        return (
-            <div className="min-h-screen bg-[#FDFDFC] p-6 dark:bg-[#0a0a0a]">
-                <div className="max-w-[1200px] mx-auto">
-                    <p className="text-[#1b1b18] dark:text-[#EDEDEC]">
-                        Loading... or no items available.
-                    </p>
-                    <pre className="text-sm">
-                        Debug: {JSON.stringify({ pasteStream }, null, 2)}
-                    </pre>
-                </div>
-            </div>
-        );
-    }
-
     const handleCopy = async (content: string, index: number) => {
         try {
             await navigator.clipboard.writeText(content);
@@ -130,35 +116,47 @@ export default function Stream() {
         }
     };
 
+    // Add this function to get a random color pair
+    const getRandomHeaderStyle = () => {
+        const colors = [
+            { bg: 'bg-[#001a00]', border: 'border-[#003300]' },  // Dark green
+            { bg: 'bg-[#001a1a]', border: 'border-[#003333]' },  // Dark cyan
+            { bg: 'bg-[#1a001a]', border: 'border-[#330033]' },  // Dark magenta
+            { bg: 'bg-[#1a1a00]', border: 'border-[#333300]' },  // Dark yellow
+            { bg: 'bg-[#0d1a0d]', border: 'border-[#1f331f]' },  // Muted green
+        ];
+        return colors[Math.floor(Math.random() * colors.length)];
+    };
+
     return (
         <>
             <Head title="Stream">
                 <link rel="preconnect" href="https://fonts.bunny.net" />
-                <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
+                <link href="https://fonts.bunny.net/css?family=space-mono:400,700|share-tech-mono:400" rel="stylesheet" />
             </Head>
-            <div className="min-h-screen bg-[#FDFDFC] p-6 dark:bg-[#0a0a0a]">
+            <div className="min-h-screen bg-black p-6">
                 <header className="mb-6 w-full max-w-[1200px] mx-auto text-sm">
                     <nav className="flex items-center justify-end gap-4">
                         {auth.user ? (
                             <Link
                                 href={route('dashboard')}
-                                className="inline-block rounded-sm border border-[#19140035] px-5 py-1.5 text-sm leading-normal text-[#1b1b18] hover:border-[#1915014a] dark:border-[#3E3E3A] dark:text-[#EDEDEC] dark:hover:border-[#62605b]"
+                                className="inline-block border border-[#00ff00] px-5 py-1.5 text-sm font-mono leading-normal text-[#00ff00] hover:bg-[#00ff00] hover:bg-opacity-20 transition-all duration-200"
                             >
-                                Dashboard
+                                {'>_DASHBOARD'}
                             </Link>
                         ) : (
                             <>
                                 <Link
                                     href={route('login')}
-                                    className="inline-block rounded-sm border border-transparent px-5 py-1.5 text-sm leading-normal text-[#1b1b18] hover:border-[#19140035] dark:text-[#EDEDEC] dark:hover:border-[#3E3E3A]"
+                                    className="inline-block border border-[#00ff00] px-5 py-1.5 text-sm font-mono leading-normal text-[#00ff00] hover:bg-[#00ff00] hover:bg-opacity-20 transition-all duration-200"
                                 >
-                                    Log in
+                                    {'>_LOGIN'}
                                 </Link>
                                 <Link
                                     href={route('register')}
-                                    className="inline-block rounded-sm border border-[#19140035] px-5 py-1.5 text-sm leading-normal text-[#1b1b18] hover:border-[#1915014a] dark:border-[#3E3E3A] dark:text-[#EDEDEC] dark:hover:border-[#62605b]"
+                                    className="inline-block border border-[#00ff00] px-5 py-1.5 text-sm font-mono leading-normal text-[#00ff00] hover:bg-[#00ff00] hover:bg-opacity-20 transition-all duration-200"
                                 >
-                                    Register
+                                    {'>_REGISTER'}
                                 </Link>
                             </>
                         )}
@@ -169,54 +167,114 @@ export default function Stream() {
                     <div className="lg:grid lg:grid-cols-[300px_1fr] gap-6">
                         <div className="mb-6 lg:mb-0">
                             <div className="sticky top-6">
-                                <h1 className="text-2xl font-semibold text-[#1b1b18] dark:text-[#EDEDEC] mb-2">
-                                    {pasteStream.title}
+                                <h1 className="text-2xl font-mono font-bold text-[#00ff00] mb-2 tracking-wider">
+                                    // {pasteStream.title}
                                 </h1>
-                                <p className="text-[#706f6c] dark:text-[#A1A09A] mb-6">
+                                <p className="font-mono text-[#00ff00] text-opacity-70 mb-6">
                                     {pasteStream.description}
                                 </p>
+                                <a
+                                    href={`/${pasteStream.id}/download`}
+                                    download
+                                    className="inline-block border border-[#00ff00] px-5 py-1.5 text-sm font-mono leading-normal text-[#00ff00] hover:bg-[#00ff00] hover:bg-opacity-20 transition-all duration-200"
+                                >
+                                    {'>_DOWNLOAD'}
+                                </a>
                             </div>
                         </div>
 
                         <div className="grid grid-cols-1 gap-6">
-                            {items.map((item, index) => (
-                                <div
-                                    key={index}
-                                    className="bg-white dark:bg-[#161615] rounded-lg shadow-md overflow-hidden border border-[#19140035] dark:border-[#3E3E3A] md:min-w-2xl max-w-2xl mx-auto"
-                                >
-                                    <div className={`p-4 border-b border-[#19140035] dark:border-[#3E3E3A] flex justify-between items-center ${headerColors[index % headerColors.length].light} ${headerColors[index % headerColors.length].dark}`}>
-                                        <h2 className="text-[#1b1b18] dark:text-[#EDEDEC] font-medium">
-                                            {items.length - index}
+                            {(!items || items.length === 0) ? (
+                                <div className="rounded border border-[#00ff00] border-opacity-50 overflow-hidden md:min-w-2xl max-w-2xl mx-auto shadow-[0_0_10px_rgba(0,255,0,0.2)] retro-terminal">
+                                    <div className={`p-4 border-b border-[#00ff00] border-opacity-50 flex justify-between items-center bg-[#001a00] border-[#003300]`}>
+                                        <h2 className="font-mono text-[#00ff00] font-bold tracking-wider">
+                                            NO_ENTRIES
                                         </h2>
-                                        <button
-                                            onClick={() => handleCopy(item.content, index)}
-                                            className="text-sm text-[#1b1b18] dark:text-[#EDEDEC] hover:text-[#f53003] dark:hover:text-[#FF4433]"
-                                        >
-                                            {copiedStates[index] ? 'Copied!' : 'Copy'}
-                                        </button>
                                     </div>
-                                    <div className="p-4">
+                                    <div className="p-4 bg-gray-700">
                                         <div className="overflow-x-auto">
-                                            <pre className="text-sm bg-[#1b1b18] text-white p-4 rounded-lg whitespace-pre-wrap break-words">
-                                                <code>{item.content}</code>
+                                            <pre className="text-sm bg-black text-[#00ff00] p-4 rounded font-mono whitespace-pre-wrap break-words border border-[#00ff00] border-opacity-30">
+                                                <code>No entries have been added to this stream yet. New entries will appear here in real-time when they are added.</code>
                                             </pre>
-                                        </div>
-                                        <div className="mt-2 text-xs text-[#706f6c] dark:text-[#A1A09A]">
-                                            Posted {new Date(item.created_at.date).toLocaleString(undefined, {
-                                                year: 'numeric',
-                                                month: 'short',
-                                                day: 'numeric',
-                                                hour: '2-digit',
-                                                minute: '2-digit'
-                                            })}
                                         </div>
                                     </div>
                                 </div>
-                            ))}
+                            ) : (
+                                items.filter(item => item && item.content).map((item, index) => {
+                                    const headerStyle = getRandomHeaderStyle();
+                                    return (
+                                        <div
+                                            key={index}
+                                            className="rounded border border-[#00ff00] border-opacity-50 overflow-hidden md:min-w-2xl max-w-2xl mx-auto shadow-[0_0_10px_rgba(0,255,0,0.2)] retro-terminal"
+                                        >
+                                            <div className={`p-4 border-b border-[#00ff00] border-opacity-50 flex justify-between items-center ${headerStyle.bg} ${headerStyle.border}`}>
+                                                <h2 className="font-mono text-[#00ff00] font-bold tracking-wider">
+                                                    ENTRY_{items.length - index}
+                                                </h2>
+                                                <button
+                                                    onClick={() => handleCopy(item.content, index)}
+                                                    className="font-mono text-sm text-[#00ff00] hover:text-[#00ff00] hover:bg-[#00ff00] hover:bg-opacity-20 px-2 py-1 transition-all duration-200"
+                                                >
+                                                    {copiedStates[index] ? '[COPIED]' : '[COPY]'}
+                                                </button>
+                                            </div>
+                                            <div className="p-4 bg-gray-700">
+                                                <div className="overflow-x-auto">
+                                                    <pre className="text-sm bg-black text-[#00ff00] p-4 rounded font-mono whitespace-pre-wrap break-words border border-[#00ff00] border-opacity-30">
+                                                        <code>{item.content}</code>
+                                                    </pre>
+                                                </div>
+                                                <div className="mt-2 text-xs font-mono text-[#00ff00] text-opacity-70">
+                                                    TIMESTAMP: {item?.created_at?.date ? new Date(item.created_at.date).toLocaleString(undefined, {
+                                                        year: 'numeric',
+                                                        month: 'short',
+                                                        day: 'numeric',
+                                                        hour: '2-digit',
+                                                        minute: '2-digit'
+                                                    }) : 'No timestamp available'}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })
+                            )}
                         </div>
                     </div>
                 </main>
             </div>
+
+            <style jsx global>{`
+                .retro-terminal {
+                    position: relative;
+                }
+                .retro-terminal::before {
+                    content: '';
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background: repeating-linear-gradient(
+                        0deg,
+                        rgba(0, 0, 0, 0.15) 0px,
+                        rgba(0, 0, 0, 0.15) 1px,
+                        transparent 1px,
+                        transparent 2px
+                    );
+                    pointer-events: none;
+                }
+                @keyframes flicker {
+                    0% { opacity: 0.97; }
+                    5% { opacity: 0.95; }
+                    10% { opacity: 0.9; }
+                    15% { opacity: 0.95; }
+                    20% { opacity: 1; }
+                    100% { opacity: 1; }
+                }
+                .retro-terminal {
+                    animation: flicker 5s infinite;
+                }
+            `}</style>
         </>
     );
 }

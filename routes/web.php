@@ -5,6 +5,8 @@ use Inertia\Inertia;
 use App\Http\Controllers\PasteStreamsController;
 
 Route::get('/', [PasteStreamsController::class, 'index'])->name('home');
+Route::get('/{slug}/', [PasteStreamsController::class, 'show'])->name('stream.show');
+Route::get('/{pasteStream}/download', [PasteStreamsController::class, 'download'])->name('stream.download');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', function () {
