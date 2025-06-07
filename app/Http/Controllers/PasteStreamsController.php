@@ -17,14 +17,9 @@ class PasteStreamsController extends Controller
             ->values()
             ->all();
 
+
         return Inertia::render('stream', [
-            'pasteStream' => [
-                'items' => $items,
-                'uuid' => $pasteStream->uuid,
-                'id' => $pasteStream->id,
-                'title' => $pasteStream->title,
-                'description' => $pasteStream->description
-            ]
+            'pasteStream' => array_merge($pasteStream->toArray(), ['items' => $items])
         ]);
     }
 
@@ -78,8 +73,13 @@ class PasteStreamsController extends Controller
     public function show($slug)
     {
         $pasteStream = PasteStream::where('slug', $slug)->first();
+        $items = collect($pasteStream->pastes ?? [])
+            ->sortByDesc('created_at')
+            ->values()
+            ->all();
+
         return Inertia::render('stream', [
-            'pasteStream' => $pasteStream
+            'pasteStream' => array_merge($pasteStream->toArray(), ['items' => $items])
         ]);
     }
 }

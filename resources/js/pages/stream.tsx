@@ -44,6 +44,25 @@ interface Props {
 export default function Stream() {
     const { auth } = usePage<SharedData>().props;
     const { pasteStream } = usePage<Props>().props;
+
+    if (!pasteStream) {
+        return (
+            <div className="min-h-screen bg-black p-6 flex items-center justify-center">
+                <div className="text-center">
+                    <h1 className="text-2xl font-mono font-bold text-[#ff0000] mb-4">
+                        // ERROR: STREAM NOT FOUND
+                    </h1>
+                    <Link
+                        href={route('dashboard')}
+                        className="inline-block border border-[#ff0000] px-5 py-1.5 text-sm font-mono leading-normal text-[#ff0000] hover:bg-[#ff0000] hover:bg-opacity-20 transition-all duration-200"
+                    >
+                        {'>_RETURN TO DASHBOARD'}
+                    </Link>
+                </div>
+            </div>
+        );
+    }
+
     const [items, setItems] = useState<PasteItem[]>(Array.isArray(pasteStream?.items) ? pasteStream.items : []);
     const [copiedStates, setCopiedStates] = useState<Record<number, boolean>>({});
 
