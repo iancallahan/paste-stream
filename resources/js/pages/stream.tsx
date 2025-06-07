@@ -44,6 +44,7 @@ interface Props {
 export default function Stream() {
     const { auth } = usePage<SharedData>().props;
     const { pasteStream } = usePage<Props>().props;
+    const [sortAscending, setSortAscending] = useState(false);
 
     if (!pasteStream) {
         return (
@@ -147,6 +148,12 @@ export default function Stream() {
         return colors[Math.floor(Math.random() * colors.length)];
     };
 
+    const sortedItems = [...items].sort((a, b) => {
+        const dateA = new Date(a.created_at.date).getTime();
+        const dateB = new Date(b.created_at.date).getTime();
+        return sortAscending ? dateA - dateB : dateB - dateA;
+    });
+
     return (
         <>
             <Head title="Stream">
@@ -203,6 +210,29 @@ export default function Stream() {
                         </div>
 
                         <div className="grid grid-cols-1 gap-6">
+                            <div className="flex justify-end gap-4 mb-4">
+                                <button
+                                    onClick={() => setSortAscending(false)}
+                                    className={`inline-block border px-5 py-1.5 text-sm font-mono leading-normal transition-all duration-200 ${
+                                        !sortAscending
+                                            ? 'border-[#00ff00] text-black bg-[#00ff00]'
+                                            : 'border-[#00ff00] border-opacity-50 text-[#00ff00] text-opacity-50 hover:bg-[#00ff00] hover:bg-opacity-20 hover:text-[#00ff00]'
+                                    }`}
+                                >
+                                    {'>_NEWEST_FIRST'}
+                                </button>
+                                <button
+                                    onClick={() => setSortAscending(true)}
+                                    className={`inline-block border px-5 py-1.5 text-sm font-mono leading-normal transition-all duration-200 ${
+                                        sortAscending
+                                            ? 'border-[#00ff00] text-black bg-[#00ff00]'
+                                            : 'border-[#00ff00] border-opacity-50 text-[#00ff00] text-opacity-50 hover:bg-[#00ff00] hover:bg-opacity-20 hover:text-[#00ff00]'
+                                    }`}
+                                >
+                                    {'>_OLDEST_FIRST'}
+                                </button>
+                            </div>
+
                             {(!items || items.length === 0) ? (
                                 <div className="rounded border border-[#00ff00] border-opacity-50 overflow-hidden md:min-w-2xl max-w-2xl mx-auto shadow-[0_0_10px_rgba(0,255,0,0.2)] retro-terminal">
                                     <div className={`p-4 border-b border-[#00ff00] border-opacity-50 flex justify-between items-center bg-[#001a00] border-[#003300]`}>
@@ -219,7 +249,7 @@ export default function Stream() {
                                     </div>
                                 </div>
                             ) : (
-                                items.filter(item => item && item.content).map((item, index) => {
+                                sortedItems.filter(item => item && item.content).map((item, index) => {
                                     const headerStyle = getRandomHeaderStyle();
                                     return (
                                         <div
