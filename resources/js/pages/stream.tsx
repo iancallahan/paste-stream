@@ -149,9 +149,23 @@ export default function Stream() {
     };
 
     const sortedItems = [...items].sort((a, b) => {
-        const dateA = new Date(a.created_at.date).getTime();
-        const dateB = new Date(b.created_at.date).getTime();
-        return sortAscending ? dateA - dateB : dateB - dateA;
+        // Handle cases where items or their dates might be undefined/null
+        if (!a?.created_at?.date) return 1;  // Push invalid dates to the end
+        if (!b?.created_at?.date) return -1; // Push invalid dates to the end
+
+        try {
+            const dateA = new Date(a.created_at.date).getTime();
+            const dateB = new Date(b.created_at.date).getTime();
+
+            // Check if dates are valid
+            if (isNaN(dateA)) return 1;
+            if (isNaN(dateB)) return -1;
+
+            return sortAscending ? dateA - dateB : dateB - dateA;
+        } catch (error) {
+            console.error('Error sorting dates:', error);
+            return 0; // Keep original order if there's an error
+        }
     });
 
     return (
@@ -251,14 +265,21 @@ export default function Stream() {
                             ) : (
                                 sortedItems.filter(item => item && item.content).map((item, index) => {
                                     const headerStyle = getRandomHeaderStyle();
+                                    // Find the original index of this item in the items array
+                                    const originalIndex = items.findIndex(i =>
+                                        i?.created_at?.date === item?.created_at?.date &&
+                                        i?.content === item?.content
+                                    );
+                                    const entryNumber = items.length - originalIndex;
+
                                     return (
                                         <div
-                                            key={index}
+                                            key={`${item.created_at.date}-${index}`}
                                             className="rounded border border-[#00ff00] border-opacity-50 overflow-hidden md:min-w-2xl max-w-2xl mx-auto shadow-[0_0_10px_rgba(0,255,0,0.2)] retro-terminal"
                                         >
                                             <div className={`p-4 border-b border-[#00ff00] border-opacity-50 flex justify-between items-center ${headerStyle.bg} ${headerStyle.border}`}>
                                                 <h2 className="font-mono text-[#00ff00] font-bold tracking-wider">
-                                                    ENTRY_{items.length - index}
+                                                    ENTRY_{entryNumber}
                                                 </h2>
                                                 <button
                                                     onClick={() => handleCopy(item.content, index)}
