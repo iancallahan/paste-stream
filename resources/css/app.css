@@ -1,25 +1,25 @@
 @import 'tailwindcss';
 
-@plugin 'tailwindcss-animate';
+@use 'tailwindcss-animate';
 
 @source '../views';
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 
 /* Safelist our dynamic classes */
-@source inline("bg-[#001a00]");
-@source inline("bg-[#001a1a]");
-@source inline("bg-[#1a001a]");
-@source inline("bg-[#1a1a00]");
-@source inline("bg-[#0d1a0d]");
-@source inline("border-[#003300]");
-@source inline("border-[#003333]");
-@source inline("border-[#330033]");
-@source inline("border-[#333300]");
-@source inline("border-[#1f331f]");
-@source inline("bg-opacity-20");
-@source inline("border-opacity-30");
-@source inline("border-opacity-50");
-@source inline("text-opacity-70");
+@source "inline('bg-[#001a00]')";
+@source "inline('bg-[#001a1a]')";
+@source "inline('bg-[#1a001a]')";
+@source "inline('bg-[#1a1a00]')";
+@source "inline('bg-[#0d1a0d]')";
+@source "inline('border-[#003300]')";
+@source "inline('border-[#003333]')";
+@source "inline('border-[#330033]')";
+@source "inline('border-[#333300]')";
+@source "inline('border-[#1f331f]')";
+@source "inline('bg-opacity-20')";
+@source "inline('border-opacity-30')";
+@source "inline('border-opacity-50')";
+@source "inline('text-opacity-70')";
 
 @custom-variant dark (&:is(.dark *));
 
