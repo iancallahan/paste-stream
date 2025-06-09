@@ -1,10 +1,9 @@
 <?php
 
-namespace App\Filament\Resources\PasteStreams\Pages;
+namespace App\Filament\Resources\PasteStreamResource\Pages;
 
-use App\Filament\Resources\PasteStreams\PasteStreamResource;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\ViewAction;
+use App\Filament\Resources\PasteStreamResource;
+use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
 
 class EditPasteStream extends EditRecord
@@ -14,8 +13,7 @@ class EditPasteStream extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            ViewAction::make(),
-            DeleteAction::make(),
+            Actions\DeleteAction::make(),
         ];
     }
 }

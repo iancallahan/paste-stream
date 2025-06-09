@@ -1,8 +1,9 @@
 <?php
 
-namespace App\Filament\Resources\PasteStreams\Pages;
+namespace App\Filament\Resources\PasteStreamResource\Pages;
 
-use App\Filament\Resources\PasteStreams\PasteStreamResource;
+use App\Filament\Resources\PasteStreamResource;
+use Filament\Actions;
 use Filament\Resources\Pages\CreateRecord;
 
 class CreatePasteStream extends CreateRecord

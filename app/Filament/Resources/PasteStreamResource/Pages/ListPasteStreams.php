@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Filament\Resources\PasteStreams\Pages;
+namespace App\Filament\Resources\PasteStreamResource\Pages;
 
-use App\Filament\Resources\PasteStreams\PasteStreamResource;
-use Filament\Actions\CreateAction;
+use App\Filament\Resources\PasteStreamResource;
+use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
 
 class ListPasteStreams extends ListRecords
@@ -13,7 +13,7 @@ class ListPasteStreams extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make(),
+            Actions\CreateAction::make(),
         ];
     }
 }
