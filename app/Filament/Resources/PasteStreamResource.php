@@ -44,6 +44,7 @@ class PasteStreamResource extends Resource
                             Textarea::make('content')
                                 ->required()
                                 ->label('Content'),
+                            TextInput::make('label'),
                             DateTimePicker::make('created_at.date')
                                 ->required()
                                 ->timezone('UTC')

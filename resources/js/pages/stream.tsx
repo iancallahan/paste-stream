@@ -18,6 +18,7 @@ window.Pusher = Pusher;
 
 interface PasteItem {
     content: string;
+    label?: string;
     created_at: {
         date: string;
         timezone_type: number;
@@ -66,6 +67,9 @@ export default function Stream() {
 
     const [items, setItems] = useState<PasteItem[]>(Array.isArray(pasteStream?.items) ? pasteStream.items : []);
     const [copiedStates, setCopiedStates] = useState<Record<number, boolean>>({});
+
+    // Debug logging for initial items
+    console.log('Initial items:', items);
 
     useEffect(() => {
         // Initialize Laravel Echo
@@ -168,6 +172,9 @@ export default function Stream() {
         }
     });
 
+    // Debug logging for sorted items
+    console.log('Sorted items:', sortedItems);
+
     return (
         <>
             <Head title="Stream">
@@ -265,12 +272,15 @@ export default function Stream() {
                             ) : (
                                 sortedItems.filter(item => item && item.content).map((item, index) => {
                                     const headerStyle = getRandomHeaderStyle();
-                                    // Find the original index of this item in the items array
                                     const originalIndex = items.findIndex(i =>
                                         i?.created_at?.date === item?.created_at?.date &&
                                         i?.content === item?.content
                                     );
                                     const entryNumber = items.length - originalIndex;
+
+                                    // Debug logging
+                                    console.log('Paste item:', item);
+                                    console.log('Has label:', Boolean(item.label));
 
                                     return (
                                         <div
@@ -278,8 +288,13 @@ export default function Stream() {
                                             className="rounded border border-[#00ff00] border-opacity-50 overflow-hidden md:min-w-2xl max-w-2xl mx-auto shadow-[0_0_10px_rgba(0,255,0,0.2)] retro-terminal"
                                         >
                                             <div className={`p-4 border-b border-[#00ff00] border-opacity-50 flex justify-between items-center ${headerStyle.bg} ${headerStyle.border}`}>
-                                                <h2 className="font-mono text-[#00ff00] font-bold tracking-wider">
-                                                    ENTRY_{entryNumber}
+                                                <h2 className="font-mono text-[#00ff00] font-bold tracking-wider flex items-center gap-3">
+                                                    <span>ENTRY_{entryNumber}</span>
+                                                    {item.label && (
+                                                        <span className="text-[#00ff00] text-opacity-70 font-normal text-xs text-center">
+                                                            // {item.label}
+                                                        </span>
+                                                    )}
                                                 </h2>
                                                 <button
                                                     onClick={() => handleCopy(item.content, index)}
